@@ -1,6 +1,7 @@
 import tkinter
 import os
 import time
+import random
 
 
 def board_to_string(b):
@@ -56,11 +57,19 @@ def draw_board(canvas, board, tk):
     tk.update()
 
 
-class GUI:
-    def __init__(self):
+class GameWin:
+    def __init__(self, player):
         self.board = start_board()
-        self.player = "X"
-        self.enemy = "O"
+        if player == -1:
+            self.player = "X"
+            self.enemy = "O"
+        else:
+            self.player = "O"
+            self.enemy = "X"
+            pos = random.choice([20, 29, 34, 43])
+            res = os.popen(f"./bot -check {board_to_string(self.board)} X {pos}").read()
+            self.board = string_to_board(res)
+
 
         self.win = tkinter.Tk()
         self.win.resizable(0,0)
@@ -91,7 +100,7 @@ class GUI:
 
             time.sleep(0.2)
 
-            ai_move = os.popen(f"./bot -play {res} {self.enemy} 6").read()
+            ai_move = os.popen(f"./bot -play {res} {self.enemy} 8").read()
 
             if (ai_move != -1):
 
@@ -102,6 +111,28 @@ class GUI:
                 draw_board(self.canvas, self.board, self.win)
 
 
+class PlayerChoice:
+    def __init__(self):
+        self.win = tkinter.Tk()
+        self.win.title("Othello")
+        self.win.resizable(0,0)
+        label = tkinter.Label(self.win, text = "Pick a color", font = ("Arial", 25))
+        label.pack(side = "top", padx = 5, pady = 5)
+        btn_white = tkinter.Button(self.win, text = "White", font = ("Arial", 25), command = self.choose_white)
+        btn_white.pack(side = "left", padx = 5, pady = 5)
+        btn_black = tkinter.Button(self.win, text = "Black", font = ("Arial", 25), command = self.choose_black)
+        btn_black.pack(side = "right", padx = 5, pady = 5)
+        self.win.mainloop()
 
-        
-GUI()
+    def choose_white(self):
+        self.choice = 1
+        self.win.destroy()
+
+    def choose_black(self):
+        self.choice = -1
+        self.win.destroy()
+
+
+btn = PlayerChoice()
+
+GameWin(btn.choice)

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
@@ -185,11 +186,38 @@ int score(int8_t* board){
 }
 
 
+void heuristic_sort(int8_t** moves, int (*h)(int8_t*, int8_t), int8_t player){
+    int n = 0;
+    for (n=0; moves[n] != NULL; n++);
+    int* scores = malloc(n*sizeof(int));
+    for (int i = 0; i < n; i++){
+        scores[i] = h(moves[i], player);
+    }
+    int temp;
+    int8_t* temp_board;
+    for (int i = 0; i < n-1; i++){
+        for (int j = i+1; j<n; j++){
+            if (scores[j] > scores[i]){
+                temp = scores[i];
+                scores[i] = scores[j];
+                scores[j] = temp;
+                temp_board = moves[i];
+                moves[i] = moves[j];
+                moves[j] = temp_board;
+            }
+        }
+    }
+}
+
+
 int minimax(int8_t* board, int8_t player, int8_t current_player, int (*h)(int8_t*, int8_t), int depth, int alpha, int beta){
     if (depth == 0){
         return h(board, player);
     } else {
         int8_t** next_moves = board_next_moves(board, current_player);
+
+        heuristic_sort(next_moves, h, current_player);
+
         int n;
         for (n=0; next_moves[n] != NULL; n++);
         // cas ou aucun coup n'est possible
@@ -204,6 +232,8 @@ int minimax(int8_t* board, int8_t player, int8_t current_player, int (*h)(int8_t
             // cas max
             best = INT_MIN;
             score;
+
+
             for (int i=0; i<n; i++){
                 score = minimax(next_moves[i], player, -player, h, depth-1, alpha, beta);
                 if (score>best){
@@ -501,6 +531,20 @@ int move_played(int8_t* b1, int8_t* b2){
     }
     return -1;
 }
+
+
+int empty_squares(int8_t* board){
+    int n = 0;
+    for (int i=0; i<64; i++){
+        if (0 == board[i]){
+            n++;
+        }
+    }
+    return n;
+}
+
+
+
 
 /*
 int main(){
